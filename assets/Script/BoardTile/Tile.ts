@@ -42,16 +42,27 @@ export default class NewClass extends cc.Component {
 
     // update (dt) {}
 
-    public SetValueString()
+    public SetInitString()
     {
         this.txtValue.string = this.value.toString();
         this.node.color = this.myColors[0];
     }
 
-    public SetOrderString(val)
+    public SetValueString(val)
     {
-        cc.log("aaaaaa" + val); 
-        this.txtValue.string = val;
+        this.value = val;
+        this.txtValue.string = val.toString();
+
+        if(this.value == 0)
+            this.txtValue.string = "";
+
+        this.node.color = this.myColors[0];
+    }
+
+    public SetEmptyValue(val)
+    {
+        this.value = 0;
+        this.txtValue.string = "";
         this.node.color = this.myColors[0];
     }
 

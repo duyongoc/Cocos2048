@@ -1,12 +1,3 @@
-// Learn TypeScript:
-//  - [Chinese] https://docs.cocos.com/creator/manual/zh/scripting/typescript.html
-//  - [English] http://www.cocos2d-x.org/docs/creator/manual/en/scripting/typescript.html
-// Learn Attribute:
-//  - [Chinese] https://docs.cocos.com/creator/manual/zh/scripting/reference/attributes.html
-//  - [English] http://www.cocos2d-x.org/docs/creator/manual/en/scripting/reference/attributes.html
-// Learn life-cycle callbacks:
-//  - [Chinese] https://docs.cocos.com/creator/manual/zh/scripting/life-cycle-callbacks.html
-//  - [English] http://www.cocos2d-x.org/docs/creator/manual/en/scripting/life-cycle-callbacks.html
 
 const { ccclass, property } = cc._decorator;
 
@@ -17,11 +8,13 @@ export default class NewClass extends cc.Component {
     tile: cc.Prefab = null;
 
     offset = 150;
+
+    @property(cc.Float)
     size = 4;
 
-    sizeInit = 4;
+    sizeInit = 7;
 
-    boardTile: cc.Node[] = [];
+    boardTile: cc.Node[][] = [];
 
     count = 1;
 
@@ -32,28 +25,36 @@ export default class NewClass extends cc.Component {
     }
 
     start() {
+        for (var i = 0; i < this.size; i++) {
+            this.boardTile[i] = [];
+            for (var j = 0; j < this.size; j++) {
+                this.boardTile[i][j] = new cc.Node();
+            }
+        }
 
         var x = this.offset;
         var y = this.offset * 4;
 
         for (let i = 0; i < this.size; i++) {
             for (let j = 0; j < this.size; j++) {
-                
+
                 var vec = new cc.Vec2(x, y);
                 var obj = cc.instantiate(this.tile);
 
                 this.CreateTile(obj, vec);
-                obj.getComponent('Tile').SetOrderString(this.count);
+                obj.getComponent('Tile').SetEmptyValue();
+                this.boardTile[i][j] = obj;
 
                 this.count++;
+                // cc.log(this.count);
                 x = x + this.offset;
             }
-            
+
             x = this.offset;
             y = y - this.offset;
         }
 
-        //this.CreateRandomTile();
+        this.CreateRandomTile();
     }
 
     // update (dt) {}
@@ -62,17 +63,17 @@ export default class NewClass extends cc.Component {
 
         var pos = this.node.getParent().convertToNodeSpaceAR(vec);
         obj.setPosition(pos);
-
         this.node.getParent().addChild(obj);
-        this.boardTile.push(obj);
-        
+
     }
 
-    CreateRandomTile()
-    {
-        while(this.sizeInit >= 0){
-            var rand = this.random(0, this.boardTile.length);
-            this.boardTile[parseInt(rand)].getComponent('Tile').SetValueString();
+    CreateRandomTile() {
+
+        while (this.sizeInit > 0) {
+            var randX = this.random(0, this.size);
+            var randY = this.random(0, this.size);
+            this.boardTile[parseInt(randX)][parseInt(randY)].getComponent('Tile').SetValueString(2);
+
             this.sizeInit--;
         }
     }
@@ -82,7 +83,7 @@ export default class NewClass extends cc.Component {
         cc.systemEvent.on(cc.SystemEvent.EventType.KEY_UP, this.onKeyUp, this);
     }
 
-    UnRegisterEventKeyboard(){
+    UnRegisterEventKeyboard() {
         cc.systemEvent.off(cc.SystemEvent.EventType.KEY_DOWN, this.onKeyDown, this);
         cc.systemEvent.off(cc.SystemEvent.EventType.KEY_UP, this.onKeyUp, this);
     }
@@ -121,31 +122,165 @@ export default class NewClass extends cc.Component {
         }
     }
 
-    OnBoardTileMoveUp(){
+    OnBoardTileMoveUp() {
         cc.log("press key up");
+        for (let i = this.size - 1; i >= 0; i--) {
+            var value = 0;
+            for (let j = this.size - 1; j >= 0; j--) {
+                // cc.log( i + j + " / "+ this.boardTile[i][j].getComponent('Tile').value);
+                value += this.boardTile[j][i].getComponent('Tile').value;
+                this.boardTile[j][i].getComponent('Tile').SetValueString(0);
+
+                if (j == 0) {
+                    this.boardTile[j][i].getComponent('Tile').SetValueString(value);
+                }
+            }
+        }
 
     }
 
-    OnBoardTileMoveDown(){
+    OnBoardTileMoveDown() {
         cc.log("press key down");
+        for (let i = 0; i < this.size; i++) {
+            var value = 0;
+            for (let j = 0; j < this.size; j++) {
+                // cc.log( i + j + " / "+ this.boardTile[i][j].getComponent('Tile').value);
+                value += this.boardTile[j][i].getComponent('Tile').value;
+                this.boardTile[j][i].getComponent('Tile').SetValueString(0);
+
+                if (j == 3) {
+                    this.boardTile[j][i].getComponent('Tile').SetValueString(value);
+                }
+            }
+        }
 
     }
 
-    OnBoardTileMoveRight(){
+    OnBoardTileMoveRight() {
         cc.log("press key right");
 
+        for (let i = 0; i < this.size; i++) {
+            this.slide(i, 0);
+        }
     }
 
-    OnBoardTileMoveLeft(){
+    OnBoardTileMoveLeft() {
         cc.log("press key left");
+        for (let j = 0; j < this.size; j++) {
+            var value = 0;
+            for (let i = this.size - 1; i >= 0; i--) {
+                // cc.log( i + j + " / "+ this.boardTile[i][j].getComponent('Tile').value);
+                value += this.boardTile[j][i].getComponent('Tile').value;
+                this.boardTile[j][i].getComponent('Tile').SetValueString(0);
+
+                if (i == 0) {
+                    this.boardTile[j][i].getComponent('Tile').SetValueString(value);
+                }
+            }
+        }
 
     }
 
-    random(min, max){
-        return min + Math.random() * (max - min) ;
+    slide(x, y) {
+
+        var i = x;
+        var j = y;
+        //for(let i = 0; i < this.size; i++){
+        var arrValue: cc.Node[] = [];
+
+        let z = 0;
+        for (let w = 0; w < this.size; w++) {
+            if (this.boardTile[i][w].getComponent('Tile').value != 0) {
+                arrValue[z] = new cc.Node();
+                arrValue[z] = this.boardTile[i][w];
+                z++;
+            }
+        }
+
+        for (let k = 0; k < arrValue.length; k++) {
+            if (k + 1 < arrValue.length && arrValue[k].getComponent('Tile').value == arrValue[k + 1].getComponent('Tile').value) {
+                arrValue[k].getComponent('Tile').value += arrValue[k].getComponent('Tile').value;
+                arrValue[k + 1].getComponent('Tile').value = 0;
+            }
+        }
+
+        cc.log("---------------");
+        cc.log("row  " + i + " /  len " + arrValue.length);
+
+        var arrTmp: cc.Node[] = [];
+        for (let q = 0; q < this.size; q++) {
+            arrTmp[q] = new cc.Node();
+            arrTmp[q] = this.boardTile[i][q];
+        }
+
+        for (let t = 0; t < arrValue.length; t++) {
+            cc.log("index: " + t + " / " + "arrTmp: " + arrValue[t].getComponent('Tile').value);
+            
+        }
+
+        // var p = arrValue.length - 1;
+        // for (let t = 0; t < this.size; t++) {
+        //     cc.log("index: " +  p + " / " + "arrTmp: " + arrValue[p].getComponent('Tile').value);
+            
+        //     if ( && arrValue[p].getComponent('Tile').value != 0) {
+        //         arrTmp[t].getComponent('Tile').value = arrValue[p].getComponent('Tile').value;
+        //         p--;
+        //     }
+        //     else
+        //         arrTmp[t].getComponent('Tile').value = 0;
+            
+        // }
+
+        var p = this.size - 1;
+        for (let t = 0; t < arrValue.length; t++) {
+
+            if (arrValue[t].getComponent('Tile').value != 0) {
+                arrTmp[p].getComponent('Tile').value = arrValue[t].getComponent('Tile').value;
+                p--;
+            }
+            else
+                arrTmp[p].getComponent('Tile').value = 0;
+            
+        }
+
+
+        for (let t = 0; t <= p ; t++) {
+            arrTmp[t].getComponent('Tile').value = 0;
+        }
+
+
+
+        for (let u = 0; u < this.size; u++) {
+            //cc.log("index: " + u + " / " + "arrValue: " + arrTmp[p].getComponent('Tile').value);
+            //if(arrTmp[u].getComponent('Tile').value != 0)
+            //this.boardTile[i][u].getComponent('Tile').value = 0;
+        this.boardTile[i][u].getComponent('Tile').SetValueString(arrTmp[u].getComponent('Tile').value);
+            //cc.log("index: " + u + " / " + "arrValue: " + this.boardTile[i][u].getComponent('Tile').value);
+            //     this.boardTile[i][u].getComponent('Tile').value = 0;
+        }
+        // for (let u = 0; u < this.size ; u++) {
+        //     this.boardTile[i][u].getComponent('Tile').value = 0; 
+        //     this.boardTile[i][u].getComponent('Tile').SetValueString(0);
+        // }
+
+        // let arr = async.filter(
+        //     val => val.getComponent('Tile').value != 0
+        //    //cc.log("value " + val.getComponent('Tile').value)
+        // );
+
     }
 
-    onDestroy(){
+    Log(arr) {
+        arr.forEach(element => {
+            cc.log("+++++--" + element.getComponent('Tile').value);
+        });
+    }
+
+    random(min, max) {
+        return min + Math.random() * (max - min);
+    }
+
+    onDestroy() {
         this.UnRegisterEventKeyboard();
     }
 }

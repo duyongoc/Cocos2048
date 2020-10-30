@@ -12,7 +12,7 @@ export default class NewClass extends cc.Component {
     @property(cc.Float)
     size = 4;
 
-    sizeInit = 7;
+    sizeInit = 10;
 
     boardTile: cc.Node[][] = [];
 
@@ -160,34 +160,24 @@ export default class NewClass extends cc.Component {
         cc.log("press key right");
 
         for (let i = 0; i < this.size; i++) {
-            this.slide(i, 0);
+            this.slideright(i, 0);
         }
     }
 
     OnBoardTileMoveLeft() {
         cc.log("press key left");
-        for (let j = 0; j < this.size; j++) {
-            var value = 0;
-            for (let i = this.size - 1; i >= 0; i--) {
-                // cc.log( i + j + " / "+ this.boardTile[i][j].getComponent('Tile').value);
-                value += this.boardTile[j][i].getComponent('Tile').value;
-                this.boardTile[j][i].getComponent('Tile').SetValueString(0);
-
-                if (i == 0) {
-                    this.boardTile[j][i].getComponent('Tile').SetValueString(value);
-                }
-            }
+        
+        for (let i = 0; i < this.size; i++) {
+            this.slideleft(i, 0);
         }
 
     }
 
-    slide(x, y) {
+    slideright(x, y) {
 
-        var i = x;
-        var j = y;
-        //for(let i = 0; i < this.size; i++){
-        var arrValue: cc.Node[] = [];
-
+        let i = x;
+        let j = y;
+        let arrValue: cc.Node[] = [];
         let z = 0;
         for (let w = 0; w < this.size; w++) {
             if (this.boardTile[i][w].getComponent('Tile').value != 0) {
@@ -197,77 +187,124 @@ export default class NewClass extends cc.Component {
             }
         }
 
-        for (let k = 0; k < arrValue.length; k++) {
-            if (k + 1 < arrValue.length && arrValue[k].getComponent('Tile').value == arrValue[k + 1].getComponent('Tile').value) {
+        for (let k = arrValue.length -1; k >= 0; k--) {
+            if (k - 1 >= 0 && arrValue[k].getComponent('Tile').value == arrValue[k - 1].getComponent('Tile').value) {
                 arrValue[k].getComponent('Tile').value += arrValue[k].getComponent('Tile').value;
-                arrValue[k + 1].getComponent('Tile').value = 0;
+                arrValue[k - 1].getComponent('Tile').value = 0;
             }
         }
 
         cc.log("---------------");
         cc.log("row  " + i + " /  len " + arrValue.length);
 
-        var arrTmp: cc.Node[] = [];
+        let arrTmp: cc.Node[] = [];
         for (let q = 0; q < this.size; q++) {
             arrTmp[q] = new cc.Node();
             arrTmp[q] = this.boardTile[i][q];
         }
 
-        for (let t = 0; t < arrValue.length; t++) {
-            cc.log("index: " + t + " / " + "arrTmp: " + arrValue[t].getComponent('Tile').value);
-            
+        let arrValue2: cc.Node[] = [];
+        let o = 0;
+        for (let w = 0; w < arrValue.length; w++) {
+            if (arrValue[w].getComponent('Tile').value != 0) {
+                arrValue2[o] = new cc.Node();
+                arrValue2[o] = arrValue[w];
+                o++;
+            }
+        }
+        for (let t = 0; t < arrValue2.length; t++) {
+            cc.log("arrValue2.length: " + arrValue2.length + " / " + "arrTmp: " + arrValue2[t].getComponent('Tile').value);
         }
 
-        // var p = arrValue.length - 1;
-        // for (let t = 0; t < this.size; t++) {
-        //     cc.log("index: " +  p + " / " + "arrTmp: " + arrValue[p].getComponent('Tile').value);
-            
-        //     if ( && arrValue[p].getComponent('Tile').value != 0) {
-        //         arrTmp[t].getComponent('Tile').value = arrValue[p].getComponent('Tile').value;
-        //         p--;
-        //     }
-        //     else
-        //         arrTmp[t].getComponent('Tile').value = 0;
-            
-        // }
-
-        var p = this.size - 1;
-        for (let t = 0; t < arrValue.length; t++) {
-
-            if (arrValue[t].getComponent('Tile').value != 0) {
-                arrTmp[p].getComponent('Tile').value = arrValue[t].getComponent('Tile').value;
-                p--;
+        let m = arrValue2.length - 1;
+        for (let n = this.size -1 ; n >= 0; n--) {
+            cc.log("index: " +  m + " / " + "====: ");
+            if (m >= 0 && arrValue2[m].getComponent('Tile').value != 0) {
+                cc.log("index: " +  m + " / " + "====: " + arrValue2[m].getComponent('Tile').value);
+                arrTmp[n].getComponent('Tile').value = arrValue2[m].getComponent('Tile').value;
+                m--;
             }
             else
-                arrTmp[p].getComponent('Tile').value = 0;
-            
+                arrTmp[n].getComponent('Tile').value = 0;
         }
-
-
-        for (let t = 0; t <= p ; t++) {
-            arrTmp[t].getComponent('Tile').value = 0;
+      
+        for (let t = 0; t < this.size ; t++) {
+            //cc.log("index: " + t + " / " + "arrTmp: " + arrTmp[t].getComponent('Tile').value);
         }
-
-
 
         for (let u = 0; u < this.size; u++) {
-            //cc.log("index: " + u + " / " + "arrValue: " + arrTmp[p].getComponent('Tile').value);
-            //if(arrTmp[u].getComponent('Tile').value != 0)
-            //this.boardTile[i][u].getComponent('Tile').value = 0;
-        this.boardTile[i][u].getComponent('Tile').SetValueString(arrTmp[u].getComponent('Tile').value);
-            //cc.log("index: " + u + " / " + "arrValue: " + this.boardTile[i][u].getComponent('Tile').value);
-            //     this.boardTile[i][u].getComponent('Tile').value = 0;
+            this.boardTile[i][u].getComponent('Tile').SetValueString(arrTmp[u].getComponent('Tile').value);
         }
-        // for (let u = 0; u < this.size ; u++) {
-        //     this.boardTile[i][u].getComponent('Tile').value = 0; 
-        //     this.boardTile[i][u].getComponent('Tile').SetValueString(0);
-        // }
+    }
 
-        // let arr = async.filter(
-        //     val => val.getComponent('Tile').value != 0
-        //    //cc.log("value " + val.getComponent('Tile').value)
-        // );
+    slideleft(x, y) {
 
+        var i = x;
+        var j = y;
+        let arrValue: cc.Node[] = [];
+        let z = 0;
+        for (let w = 0; w < this.size; w++) {
+            if (this.boardTile[i][w].getComponent('Tile').value != 0) {
+                arrValue[z] = new cc.Node();
+                // var vec = new cc.Vec2(0,0);
+                // var obj = cc.instantiate(this.tile);
+
+                // this.CreateTile(obj, vec);
+                // obj.getComponent('Tile').SetEmptyValue();
+                // arrValue[z] = obj;
+                // arrValue[z].getComponent('Tile').value = this.boardTile[i][w].getComponent('Tile').value;
+
+                arrValue[z] = this.boardTile[i][w];
+                z++;
+            }
+        }
+
+        for (let k = arrValue.length -1; k >= 0; k--) {
+            if (k - 1 >= 0 && arrValue[k].getComponent('Tile').value == arrValue[k - 1].getComponent('Tile').value) {
+                arrValue[k].getComponent('Tile').value += arrValue[k].getComponent('Tile').value;
+                arrValue[k - 1].getComponent('Tile').value = 0;
+            }
+        }
+
+        cc.log("---------------");
+        cc.log("row  " + i + " /  len " + arrValue.length);
+
+        let arrTmp: cc.Node[] = [];
+        for (let q = 0; q < this.size; q++) {
+            arrTmp[q] = new cc.Node();
+            arrTmp[q] = this.boardTile[i][q];
+        }
+
+        let arrValue3: cc.Node[] = [];
+        let o = 0;
+        for (let w = 0; w < arrValue.length; w++) {
+            if (arrValue[w].getComponent('Tile').value != 0) {
+                arrValue3[o] = new cc.Node();
+                arrValue3[o] = arrValue[w];
+                o++;
+            }
+        }
+        for (let t = 0; t < arrValue.length; t++) {
+            cc.log("length: " + t + " / " + "arrValue: " + arrValue[t].getComponent('Tile').value);
+        }
+        for (let t = 0; t < arrValue3.length; t++) {
+            cc.log("length: " + t + " / " + "arrTmp: " + arrValue3[t].getComponent('Tile').value);
+        }
+
+        for (let n = 0, m = arrValue3.length - 1; n < this.size; n++) {
+            if (m >= 0  && arrValue3[m].getComponent('Tile').value != 0) {
+                cc.log("length: " + m + " / " + "arrTmp: " + arrValue3[m].getComponent('Tile').value);
+                //cc.log("index: " +  m + " / " + "mmmm: " + arrValue2[m].getComponent('Tile').value);
+                //cc.log("index: " +  n + " / " + "nnnn: " + arrTmp[n].getComponent('Tile').value);
+                arrTmp[n].getComponent('Tile').value = arrValue3[m--].getComponent('Tile').value;
+            }
+            else
+                arrTmp[n].getComponent('Tile').value = 0;
+        }
+
+        for (let u = 0; u < this.size; u++) {
+            this.boardTile[i][u].getComponent('Tile').SetValueString(arrTmp[u].getComponent('Tile').value);
+        }
     }
 
     Log(arr) {
